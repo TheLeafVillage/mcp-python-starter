@@ -5,8 +5,8 @@ Summary: A minimal Model Context Protocol (MCP) server in Python.
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: modelcontextprotocol[server]
-Requires-Dist: mcp
+Requires-Dist: modelcontextprotocol[server]>=0.1.0
+Requires-Dist: mcp>=1.9.4
 Dynamic: license-file
 
 # MCP Python Starter

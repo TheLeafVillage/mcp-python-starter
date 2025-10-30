@@ -1,2 +1,2 @@
-modelcontextprotocol[server]
-mcp
+modelcontextprotocol[server]>=0.1.0
+mcp>=1.9.4
