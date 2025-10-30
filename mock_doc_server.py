@@ -1,6 +1,13 @@
 """
 Mock documentation server with simple token-based authentication.
 This simulates an API documentation server behind SSO/authentication.
+
+PROTOTYPE IMPLEMENTATION - NOT FOR PRODUCTION USE
+This is a demonstration/testing server with intentional simplifications:
+- Passwords stored in plain text (use bcrypt/argon2 in production)
+- Tokens without expiration (implement expiration in production)
+- In-memory storage (use database in production)
+- No rate limiting (add in production)
 """
 from flask import Flask, request, jsonify
 import secrets
@@ -10,7 +17,8 @@ app = Flask(__name__)
 
 # Simple in-memory token store (for prototype purposes)
 TOKENS = {}
-# Mock user credentials
+# Mock user credentials (PROTOTYPE: plain text passwords)
+# Production: Use proper password hashing (bcrypt, argon2, etc.)
 USERS = {
     "developer@example.com": "devpassword123"
 }

@@ -35,8 +35,13 @@ mcp = FastMCP("MCP Python Starter")
 
 # Configuration for authenticated documentation server
 DOC_SERVER_URL = os.environ.get("DOC_SERVER_URL", "http://localhost:5001")
+REQUEST_TIMEOUT = 10  # seconds
 
-# In-memory token storage (in production, use secure storage)
+# PROTOTYPE: In-memory token storage
+# Production requirements:
+# - Store tokens securely per session/user context
+# - Use encrypted storage
+# - Implement token expiration and refresh
 _auth_token: Optional[str] = None
 
 # Tool: hello
@@ -93,7 +98,7 @@ def authenticate_docs(email: str, password: str) -> str:
         response = requests.post(
             f"{DOC_SERVER_URL}/auth/login",
             json={"email": email, "password": password},
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
         
         if response.status_code == 200:
@@ -128,7 +133,7 @@ def get_documentation() -> str:
         response = requests.get(
             f"{DOC_SERVER_URL}/docs",
             headers={"Authorization": f"Bearer {_auth_token}"},
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
         
         if response.status_code == 200:
@@ -195,7 +200,7 @@ def search_documentation(query: str) -> str:
             f"{DOC_SERVER_URL}/docs/search",
             params={"q": query},
             headers={"Authorization": f"Bearer {_auth_token}"},
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
         
         if response.status_code == 200:
@@ -247,7 +252,7 @@ def check_auth_status() -> str:
         response = requests.get(
             f"{DOC_SERVER_URL}/auth/validate",
             headers={"Authorization": f"Bearer {_auth_token}"},
-            timeout=10
+            timeout=REQUEST_TIMEOUT
         )
         
         if response.status_code == 200:
