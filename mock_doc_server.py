@@ -218,4 +218,6 @@ def index():
 if __name__ == "__main__":
     print("Starting Mock Documentation Server on http://localhost:5001")
     print("Default credentials: developer@example.com / devpassword123")
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    # Security: debug=False to prevent arbitrary code execution via debugger
+    # For development, set FLASK_DEBUG=1 environment variable instead
+    app.run(host="0.0.0.0", port=5001, debug=False)
