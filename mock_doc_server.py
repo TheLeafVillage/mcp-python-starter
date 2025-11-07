@@ -11,7 +11,6 @@ This is a demonstration/testing server with intentional simplifications:
 """
 from flask import Flask, request, jsonify
 import secrets
-import json
 
 app = Flask(__name__)
 
