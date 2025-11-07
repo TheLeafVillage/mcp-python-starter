@@ -16,7 +16,7 @@
   ],
   "servers": {
     "mcp-python-starter": {
-      "command": "python",
+      "command": "${workspaceFolder}/venv/bin/python",
       "args": [
         "${workspaceFolder}/server.py",
         "stdio"
