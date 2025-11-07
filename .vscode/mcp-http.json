@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mcp-python-starter-http": {
+      "url": "http://localhost:8000",
+      "description": "MCP Python Starter server running in HTTP mode. Start with: python server.py sse"
+    }
+  }
+}

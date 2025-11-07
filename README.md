@@ -22,13 +22,33 @@ A minimal Model Context Protocol (MCP) server implemented in Python, matching th
 
 2. **Run the server**
 
+   **Option A: Stdio mode (local use only)**
    ```sh
    python server.py stdio
    ```
 
+   **Option B: HTTP mode (accessible from any project)**
+   ```sh
+   python server.py sse
+   ```
+   Server will run on `http://localhost:8000` and can be accessed from any IDE/project.
+
 3. **Use with MCP client or VS Code**
 
-   Use the provided `.vscode/mcp.json` to launch the server with custom inputs.
+   **For stdio mode:** Use the provided `.vscode/mcp.json` to launch the server with custom inputs.
+   
+   **For HTTP mode:** Configure any project with:
+   ```json
+   {
+     "mcpServers": {
+       "mcp-python-starter": {
+         "url": "http://localhost:8000"
+       }
+     }
+   }
+   ```
+
+See [HTTP_SERVER_SETUP.md](HTTP_SERVER_SETUP.md) for detailed HTTP server configuration.
 
 ## Authenticated Documentation Access
 

@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import Any, Optional
 import requests
 
@@ -373,5 +374,40 @@ def check_auth_status() -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    # Support both stdio (default) and HTTP transports
+    # Usage:
+    #   python server.py              # stdio transport (default, for local use)
+    #   python server.py stdio        # stdio transport explicitly
+    #   python server.py sse          # SSE HTTP server on port 8000
+    #   python server.py streamable-http  # Streamable HTTP on port 8000
+    
+    transport = "stdio"  # default
+    
+    if len(sys.argv) > 1:
+        transport = sys.argv[1].lower()
+    
+    if transport in ["sse", "streamable-http"]:
+        print(f"🚀 Starting MCP server with {transport.upper()} transport")
+        print(f"📡 Server running at: http://localhost:8000")
+        print(f"\n📝 Configure your MCP client with:")
+        print(f'   {{')
+        print(f'     "mcpServers": {{')
+        print(f'       "mcp-python-starter": {{')
+        print(f'         "url": "http://localhost:8000"')
+        print(f'       }}')
+        print(f'     }}')
+        print(f'   }}')
+        print(f"\n💡 Set environment variables for authentication:")
+        print(f'   export DOC_EMAIL="developer@example.com"')
+        print(f'   export DOC_PASSWORD="devpassword123"')
+        print(f"\n🛑 Press Ctrl+C to stop the server\n")
+        
+        # Run with HTTP transport (FastMCP handles everything)
+        mcp.run(transport=transport)
+        
+    else:  # stdio (default)
+        # Run with stdio transport (default behavior)
+        mcp.run()
+
+
 
