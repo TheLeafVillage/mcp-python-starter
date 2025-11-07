@@ -37,6 +37,10 @@ mcp = FastMCP("MCP Python Starter")
 DOC_SERVER_URL = os.environ.get("DOC_SERVER_URL", "http://localhost:5001")
 REQUEST_TIMEOUT = 10  # seconds
 
+# Optional: Credentials from environment variables (avoids passing through LLM)
+DOC_EMAIL = os.environ.get("DOC_EMAIL")
+DOC_PASSWORD = os.environ.get("DOC_PASSWORD")
+
 # PROTOTYPE: In-memory token storage
 # Production requirements:
 # - Store tokens securely per session/user context
@@ -80,10 +84,42 @@ async def say_hello_sampling(name: str,  ctx: Context) -> str:
 
 # ===== Authenticated Documentation Access Tools =====
 
+def _auto_authenticate() -> bool:
+    """
+    Auto-authenticate using environment variables if available.
+    Returns True if authenticated, False otherwise.
+    """
+    global _auth_token
+    
+    # Already authenticated
+    if _auth_token is not None:
+        return True
+    
+    # Try to authenticate with env vars
+    if DOC_EMAIL and DOC_PASSWORD:
+        try:
+            response = requests.post(
+                f"{DOC_SERVER_URL}/auth/login",
+                json={"email": DOC_EMAIL, "password": DOC_PASSWORD},
+                timeout=REQUEST_TIMEOUT
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                _auth_token = data.get("token")
+                return _auth_token is not None
+        except:
+            pass  # Silent fail, user will see error from calling function
+    
+    return False
+
 @mcp.tool()
 def authenticate_docs(email: str, password: str) -> str:
     """
     Authenticate with the documentation server to access protected API documentation.
+    
+    Note: You can also set DOC_EMAIL and DOC_PASSWORD environment variables to avoid
+    passing credentials through the LLM. The server will auto-authenticate on first use.
     
     Args:
         email: User email (default: developer@example.com)
@@ -119,15 +155,16 @@ def authenticate_docs(email: str, password: str) -> str:
 def get_documentation() -> str:
     """
     Retrieve all API documentation from the authenticated documentation server.
-    Requires authentication - call authenticate_docs first if not authenticated.
+    Automatically authenticates using environment variables (DOC_EMAIL, DOC_PASSWORD) if available.
+    Otherwise, call authenticate_docs first.
     
     Returns:
         Complete API documentation in JSON format
     """
     global _auth_token
     
-    if not _auth_token:
-        return "❌ Not authenticated. Please call authenticate_docs with your credentials first.\nDefault credentials: developer@example.com / devpassword123"
+    if not _auto_authenticate():
+        return "❌ Not authenticated. Please either:\n1. Set DOC_EMAIL and DOC_PASSWORD environment variables, or\n2. Call authenticate_docs(email, password)\n\nDefault credentials: developer@example.com / devpassword123"
     
     try:
         response = requests.get(
@@ -189,7 +226,8 @@ def get_documentation() -> str:
 def search_documentation(query: str) -> str:
     """
     Search the API documentation for specific endpoints, guides, or functionality.
-    Requires authentication - call authenticate_docs first if not authenticated.
+    Automatically authenticates using environment variables (DOC_EMAIL, DOC_PASSWORD) if available.
+    Otherwise, call authenticate_docs first.
     
     Args:
         query: Search term (e.g., "GET method", "POST", "delete", "implement", etc.)
@@ -199,8 +237,8 @@ def search_documentation(query: str) -> str:
     """
     global _auth_token
     
-    if not _auth_token:
-        return "❌ Not authenticated. Please call authenticate_docs with your credentials first.\nDefault credentials: developer@example.com / devpassword123"
+    if not _auto_authenticate():
+        return "❌ Not authenticated. Please either:\n1. Set DOC_EMAIL and DOC_PASSWORD environment variables, or\n2. Call authenticate_docs(email, password)\n\nDefault credentials: developer@example.com / devpassword123"
     
     if not query:
         return "❌ Please provide a search query."
@@ -262,18 +300,19 @@ def search_documentation(query: str) -> str:
 def get_guide(guide_title: str) -> str:
     """
     Get the full content of an implementation guide.
-    Requires authentication - call authenticate_docs first if not authenticated.
+    Automatically authenticates using environment variables (DOC_EMAIL, DOC_PASSWORD) if available.
+    Otherwise, call authenticate_docs first.
     
     Args:
-        guide_title: Title of the guide (e.g., "How to Implement a GET Method in MCP Server")
+        guide_title: Title of the guide (e.g., "How to Get Current Weather")
     
     Returns:
         Full guide content with code examples
     """
     global _auth_token
     
-    if not _auth_token:
-        return "❌ Not authenticated. Please call authenticate_docs with your credentials first.\nDefault credentials: developer@example.com / devpassword123"
+    if not _auto_authenticate():
+        return "❌ Not authenticated. Please either:\n1. Set DOC_EMAIL and DOC_PASSWORD environment variables, or\n2. Call authenticate_docs(email, password)\n\nDefault credentials: developer@example.com / devpassword123"
     
     if not guide_title:
         return "❌ Please provide a guide title."

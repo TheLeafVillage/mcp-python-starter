@@ -44,14 +44,40 @@ This MCP server includes tools to access API documentation that is behind authen
 
    This starts a Flask server on `http://localhost:5001` with mock API documentation.
 
-2. **Default credentials**:
+2. **Choose your authentication method**:
+
+   **Option A: Environment Variables (Recommended - no credentials through LLM)**
+   ```sh
+   export DOC_EMAIL="developer@example.com"
+   export DOC_PASSWORD="devpassword123"
+   python server.py stdio
+   ```
+   
+   With this method, you can directly use documentation tools without explicit authentication:
+   ```python
+   get_documentation()  # Auto-authenticates using environment variables
+   search_documentation("weather")  # No auth step needed
+   ```
+
+   **Option B: Manual Authentication (credentials passed as parameters)**
+   ```sh
+   python server.py stdio
+   ```
+   
+   Then authenticate explicitly:
+   ```python
+   authenticate_docs("developer@example.com", "devpassword123")
+   get_documentation()
+   ```
+
+3. **Default credentials**:
    - Email: `developer@example.com`
    - Password: `devpassword123`
 
 ### Available Tools
 
-#### `authenticate_docs(email, password)`
-Authenticate with the documentation server to get access to protected documentation.
+#### `authenticate_docs(email, password)` - Optional
+Authenticate with the documentation server. **Note**: If you set `DOC_EMAIL` and `DOC_PASSWORD` environment variables, authentication happens automatically and you don't need to call this.
 
 **Example**:
 ```python
@@ -62,27 +88,48 @@ authenticate_docs("developer@example.com", "devpassword123")
 Check if you are currently authenticated and see available commands.
 
 #### `get_documentation()`
-Retrieve all API documentation from the authenticated server.
+Retrieve all API documentation from the authenticated server. Auto-authenticates using environment variables if available.
 
 **Example**:
 ```python
-get_documentation()
+get_documentation()  # Works automatically if DOC_EMAIL and DOC_PASSWORD are set
 ```
 
 #### `search_documentation(query)`
-Search the API documentation for specific endpoints or functionality.
+Search the API documentation for specific endpoints or functionality. Auto-authenticates using environment variables if available.
 
 **Example**:
 ```python
-search_documentation("users")
+search_documentation("current weather")  # Auto-authenticates if env vars set
 search_documentation("POST")
-search_documentation("delete")
+search_documentation("forecast")
 ```
+
+#### `get_guide(title)`
+Get the full content of a specific implementation guide with code examples.
+
+**Example**:
+```python
+get_guide("How to Get Current Weather")
+```
+
+### Authentication Methods
+
+**Environment Variables (Recommended)**
+- Credentials never pass through the LLM/chat
+- Auto-authenticates on first tool use
+- Most secure for this prototype
+- See [AUTHENTICATION_METHODS.md](AUTHENTICATION_METHODS.md) for details
+
+**Manual Authentication**
+- Pass credentials as tool parameters
+- Useful for testing or when env vars aren't available
+- Credentials may be logged in chat history
 
 ### How It Works
 
 1. The mock documentation server (`mock_doc_server.py`) simulates an API documentation portal behind authentication
-2. Users must authenticate using `authenticate_docs()` with valid credentials
+2. When you use documentation tools, the MCP server automatically authenticates using environment variables (if set)
 3. Upon successful authentication, a token is stored securely (in-memory for this prototype)
 4. The token is automatically included in subsequent requests to access documentation
 5. Users can query documentation using `get_documentation()` or search with `search_documentation(query)`
