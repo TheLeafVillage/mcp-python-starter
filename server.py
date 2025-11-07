@@ -145,6 +145,16 @@ def get_documentation() -> str:
             formatted += "Authentication:\n"
             formatted += f"  Type: {docs.get('authentication', {}).get('type')}\n"
             formatted += f"  Description: {docs.get('authentication', {}).get('description')}\n\n"
+            
+            # Add implementation guides
+            guides = docs.get('guides', [])
+            if guides:
+                formatted += "📖 Implementation Guides:\n\n"
+                for guide in guides:
+                    formatted += f"▶ {guide['title']}\n"
+                    formatted += f"  Category: {guide['category']}\n"
+                    formatted += f"  {guide['description']}\n\n"
+            
             formatted += "Available Endpoints:\n\n"
             
             for endpoint in docs.get('endpoints', []):
@@ -178,14 +188,14 @@ def get_documentation() -> str:
 @mcp.tool()
 def search_documentation(query: str) -> str:
     """
-    Search the API documentation for specific endpoints or functionality.
+    Search the API documentation for specific endpoints, guides, or functionality.
     Requires authentication - call authenticate_docs first if not authenticated.
     
     Args:
-        query: Search term (e.g., "users", "POST", "delete", etc.)
+        query: Search term (e.g., "GET method", "POST", "delete", "implement", etc.)
     
     Returns:
-        Search results with matching endpoints
+        Search results with matching guides and endpoints
     """
     global _auth_token
     
@@ -205,23 +215,36 @@ def search_documentation(query: str) -> str:
         
         if response.status_code == 200:
             data = response.json()
-            results = data.get('results', [])
-            count = data.get('count', 0)
+            guides = data.get('guides', [])
+            endpoints = data.get('endpoints', [])
+            total_count = data.get('total_count', 0)
             
-            if count == 0:
+            if total_count == 0:
                 return f"🔍 No results found for query: '{query}'"
             
-            formatted = f"🔍 Search Results for '{query}' ({count} found):\n\n"
+            formatted = f"🔍 Search Results for '{query}' ({total_count} found):\n\n"
             
-            for endpoint in results:
-                formatted += f"▶ {endpoint['method']} {endpoint['path']}\n"
-                formatted += f"  Description: {endpoint['description']}\n"
-                if endpoint.get('parameters'):
-                    formatted += "  Parameters:\n"
-                    for param in endpoint['parameters']:
-                        required = "required" if param.get('required') else "optional"
-                        formatted += f"    - {param['name']} ({param['type']}) - {required}\n"
-                formatted += "\n"
+            # Show implementation guides first
+            if guides:
+                formatted += "📖 Implementation Guides:\n\n"
+                for guide in guides:
+                    formatted += f"▶ {guide['title']}\n"
+                    formatted += f"  Category: {guide['category']}\n"
+                    formatted += f"  {guide['description']}\n"
+                    formatted += f"  Use get_guide(\"{guide['title']}\") for full content\n\n"
+            
+            # Show endpoints
+            if endpoints:
+                formatted += "API Endpoints:\n\n"
+                for endpoint in endpoints:
+                    formatted += f"▶ {endpoint['method']} {endpoint['path']}\n"
+                    formatted += f"  Description: {endpoint['description']}\n"
+                    if endpoint.get('parameters'):
+                        formatted += "  Parameters:\n"
+                        for param in endpoint['parameters']:
+                            required = "required" if param.get('required') else "optional"
+                            formatted += f"    - {param['name']} ({param['type']}) - {required}\n"
+                    formatted += "\n"
             
             return formatted
         elif response.status_code == 401:
@@ -229,6 +252,67 @@ def search_documentation(query: str) -> str:
             return "❌ Authentication token expired or invalid. Please authenticate again using authenticate_docs."
         else:
             return f"❌ Error searching documentation: {response.json().get('error', 'Unknown error')}"
+    except requests.exceptions.ConnectionError:
+        return f"❌ Cannot connect to documentation server at {DOC_SERVER_URL}. Please ensure the mock server is running."
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
+
+@mcp.tool()
+def get_guide(guide_title: str) -> str:
+    """
+    Get the full content of an implementation guide.
+    Requires authentication - call authenticate_docs first if not authenticated.
+    
+    Args:
+        guide_title: Title of the guide (e.g., "How to Implement a GET Method in MCP Server")
+    
+    Returns:
+        Full guide content with code examples
+    """
+    global _auth_token
+    
+    if not _auth_token:
+        return "❌ Not authenticated. Please call authenticate_docs with your credentials first.\nDefault credentials: developer@example.com / devpassword123"
+    
+    if not guide_title:
+        return "❌ Please provide a guide title."
+    
+    try:
+        response = requests.get(
+            f"{DOC_SERVER_URL}/docs",
+            headers={"Authorization": f"Bearer {_auth_token}"},
+            timeout=REQUEST_TIMEOUT
+        )
+        
+        if response.status_code == 200:
+            docs = response.json()
+            guides = docs.get('guides', [])
+            
+            # Find the guide by title (case-insensitive)
+            guide = None
+            for g in guides:
+                if g['title'].lower() == guide_title.lower():
+                    guide = g
+                    break
+            
+            if not guide:
+                available = [g['title'] for g in guides]
+                return f"❌ Guide not found: '{guide_title}'\n\nAvailable guides:\n" + "\n".join(f"  - {t}" for t in available)
+            
+            # Format the guide content
+            formatted = f"📖 {guide['title']}\n\n"
+            formatted += f"Category: {guide['category']}\n"
+            formatted += f"Description: {guide['description']}\n\n"
+            formatted += "=" * 70 + "\n\n"
+            formatted += guide['content']
+            
+            return formatted
+        elif response.status_code == 401:
+            _auth_token = None
+            return "❌ Authentication token expired or invalid. Please authenticate again using authenticate_docs."
+        else:
+            return f"❌ Error fetching guide: {response.json().get('error', 'Unknown error')}"
     except requests.exceptions.ConnectionError:
         return f"❌ Cannot connect to documentation server at {DOC_SERVER_URL}. Please ensure the mock server is running."
     except Exception as e:
