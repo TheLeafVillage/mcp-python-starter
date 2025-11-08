@@ -1,21 +1,12 @@
 #!/bin/bash
 
 # Startup script for MCP Python Starter HTTP Server
-# This allows the server to be accessed from any project
+# This allows the server to be accessed from any project with per-developer credentials
 
 echo "🚀 Starting MCP Python Starter HTTP Server"
 echo ""
-
-# Check if environment variables are set
-if [ -z "$DOC_EMAIL" ] || [ -z "$DOC_PASSWORD" ]; then
-    echo "⚠️  Warning: DOC_EMAIL and/or DOC_PASSWORD not set"
-    echo "   Setting default credentials..."
-    export DOC_EMAIL="developer@example.com"
-    export DOC_PASSWORD="devpassword123"
-fi
-
-echo "📧 DOC_EMAIL: $DOC_EMAIL"
-echo "🔑 DOC_PASSWORD: ********"
+echo "ℹ️  HTTP Mode: Each developer provides their own credentials through MCP client"
+echo "   Server does not need credentials at startup"
 echo ""
 
 # Check if mock documentation server is running
@@ -27,6 +18,10 @@ fi
 
 # Start the MCP server in SSE mode
 echo "🌐 Starting HTTP server on port 8000..."
+echo ""
+echo "📝 Developers should configure their projects with:"
+echo "   See .vscode/mcp-http.json for example configuration"
+echo "   Each developer will be prompted for their credentials"
 echo ""
 
 python server.py sse

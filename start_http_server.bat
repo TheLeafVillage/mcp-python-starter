@@ -1,25 +1,11 @@
 @echo off
 REM Startup script for MCP Python Starter HTTP Server (Windows)
-REM This allows the server to be accessed from any project
+REM This allows the server to be accessed from any project with per-developer credentials
 
 echo 🚀 Starting MCP Python Starter HTTP Server
 echo.
-
-REM Check if environment variables are set
-if "%DOC_EMAIL%"=="" (
-    echo ⚠️  Warning: DOC_EMAIL not set
-    echo    Setting default credentials...
-    set DOC_EMAIL=developer@example.com
-)
-
-if "%DOC_PASSWORD%"=="" (
-    echo ⚠️  Warning: DOC_PASSWORD not set
-    echo    Setting default credentials...
-    set DOC_PASSWORD=devpassword123
-)
-
-echo 📧 DOC_EMAIL: %DOC_EMAIL%
-echo 🔑 DOC_PASSWORD: ********
+echo ℹ️  HTTP Mode: Each developer provides their own credentials through MCP client
+echo    Server does not need credentials at startup
 echo.
 
 REM Check if mock documentation server is running
@@ -32,6 +18,10 @@ if errorlevel 1 (
 
 REM Start the MCP server in SSE mode
 echo 🌐 Starting HTTP server on port 8000...
+echo.
+echo 📝 Developers should configure their projects with:
+echo    See .vscode/mcp-http.json for example configuration
+echo    Each developer will be prompted for their credentials
 echo.
 
 python server.py sse

@@ -1,8 +1,27 @@
 {
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "DOC_EMAIL",
+      "description": "Email for documentation authentication",
+      "default": "developer@example.com"
+    },
+    {
+      "type": "promptString",
+      "id": "DOC_PASSWORD",
+      "description": "Password for documentation authentication",
+      "default": "devpassword123",
+      "password": true
+    }
+  ],
   "mcpServers": {
     "mcp-python-starter-http": {
       "url": "http://localhost:8000",
-      "description": "MCP Python Starter server running in HTTP mode. Start with: python server.py sse"
+      "description": "MCP Python Starter server running in HTTP mode. Each developer provides their own credentials.",
+      "env": {
+        "DOC_EMAIL": "${input:DOC_EMAIL}",
+        "DOC_PASSWORD": "${input:DOC_PASSWORD}"
+      }
     }
   }
 }

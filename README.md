@@ -27,22 +27,40 @@ A minimal Model Context Protocol (MCP) server implemented in Python, matching th
    python server.py stdio
    ```
 
-   **Option B: HTTP mode (accessible from any project)**
+   **Option B: HTTP mode (accessible from any project, per-developer credentials)**
    ```sh
    python server.py sse
    ```
-   Server will run on `http://localhost:8000` and can be accessed from any IDE/project.
+   Server will run on `http://localhost:8000` and can be accessed from any IDE/project. Each developer provides their own credentials.
 
 3. **Use with MCP client or VS Code**
 
    **For stdio mode:** Use the provided `.vscode/mcp.json` to launch the server with custom inputs.
    
-   **For HTTP mode:** Configure any project with:
+   **For HTTP mode (recommended):** Each developer configures their project with their own credentials:
    ```json
    {
+     "inputs": [
+       {
+         "type": "promptString",
+         "id": "DOC_EMAIL",
+         "description": "Your email for documentation access",
+         "default": "developer@example.com"
+       },
+       {
+         "type": "promptString",
+         "id": "DOC_PASSWORD",
+         "description": "Your password",
+         "password": true
+       }
+     ],
      "mcpServers": {
-       "mcp-python-starter": {
-         "url": "http://localhost:8000"
+       "weather-api-docs": {
+         "url": "http://localhost:8000",
+         "env": {
+           "DOC_EMAIL": "${input:DOC_EMAIL}",
+           "DOC_PASSWORD": "${input:DOC_PASSWORD}"
+         }
        }
      }
    }
